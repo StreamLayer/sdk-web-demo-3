@@ -58,31 +58,23 @@ export const Sidebar = styled.div`
   overflow: hidden;
 
   transition: width .5s ease;
-
-  ${breakpointsPortrait(`
-    display: none;
-  `)}
 `
 
 export const SideBarOverlay = styled.div`
   ${IS_DEBUG && 'background: purple;'}
-  display: none;
   margin: auto;
+  width: 100%;
+  max-width: 450px;
+  display: block;
 
-  ${breakpointsPortrait(`
-      width: 100%;
-      max-width: 450px;
-      display: block;
-
-      @keyframes grow-in-sidebar {
-          from {
-              max-width: 0px;
-          }
-          to {
-              max-width: 450px;
-          }
+  @keyframes grow-in-sidebar {
+      from {
+          max-width: 0px;
       }
-  `)}
+      to {
+          max-width: 450px;
+      }
+  }
 `
 
 export const Banner = styled.div`
@@ -177,10 +169,6 @@ export const Overlay = styled.div`
         left: 16px;
         bottom: 8px;
     `)}
-
-    ${breakpointsPortrait(`
-        display: none;
-    `)}
 `
 
 export const Notification = styled.div`
@@ -227,4 +215,10 @@ export const PointsContainer = styled.div`
   position: absolute;
   top: 15px;
   left: 15px;
+`
+
+export const InApp = styled.div`
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
 `

@@ -2,26 +2,34 @@ import Hls from "hls.js";
 import { Preload, Video, VideoIFrame, InteractNote } from './styles'
 import { useEffect, useRef, useState } from 'react'
 import { useStreamLayer } from "@streamlayer/react"
-import { FALLBACK_VIDEO } from "../../config"
 
-export const VideoComponent: React.FC<{ src?: string, muted: boolean, interacted: boolean, setInteracted: (interacted: boolean) => void
-}> = ({ src = FALLBACK_VIDEO, interacted, setInteracted, muted }) => {
+export const VideoComponent: React.FC<{ muted: boolean, interacted: boolean, setInteracted: (interacted: boolean) => void
+}> = ({ interacted, setInteracted, muted }) => {
   const videoRef = useRef() as React.RefObject<HTMLVideoElement>;
+  const timeoutRef = useRef<NodeJS.Timeout>();
   const sdk = useStreamLayer()
   const [streamSrc, setStreamSrc] = useState('')
   const [errOnPlay, setErrOnPlay] = useState(false)
 
   useEffect(() => {
     if (sdk) {
-      return sdk.streamSummary().subscribe((value) => {
-        if (value.loading === false && value.error === undefined && value.data) {
-          setStreamSrc(value.data.summary?.stream ? `${value.data.summary.stream}` : src)
+      return sdk.streamSummary().subscribe((value: any) => {
+        if (value.data?.summary?.stream) {
+          setStreamSrc(value.data.summary.stream)
         }
       })
     }
-  }, [sdk, src])
+  }, [sdk])
 
-  useEffect(()=>{
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(()=> {
     if (streamSrc && streamSrc.includes('m3u8')) {
       if (Hls.isSupported() && videoRef.current) {
         const hls = new Hls({
@@ -30,21 +38,18 @@ export const VideoComponent: React.FC<{ src?: string, muted: boolean, interacted
 
         hls.loadSource(streamSrc);
         hls.attachMedia(videoRef.current)
-
-        hls.on(Hls.Events.ERROR, () => {
-          setStreamSrc(src)
-        });
       } else {
-        setStreamSrc(src)
+        setStreamSrc('')
       }
     }
+
     if (videoRef.current) {
       videoRef.current.volume = 0.1
       videoRef.current.play().then(() => setInteracted(true)).catch(() => {
         setErrOnPlay(true)
       })
     }
-  }, [streamSrc, src])
+  }, [streamSrc])
 
   useEffect(() => {
     if (interacted && errOnPlay) {

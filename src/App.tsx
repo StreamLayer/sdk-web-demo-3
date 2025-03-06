@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ContentActivateParams, StreamLayerProvider } from '@streamlayer/react'
+import { ContentActivateParams, StreamLayerProvider, StreamLayerSDKNotification } from '@streamlayer/react'
 import { StreamLayerSDKPoints } from '@streamlayer/react/points'
 import { StreamLayerSDKReact } from '@streamlayer/react'
 import { StreamLayerSDKAdvertisement } from '@streamlayer/react/advertisement'
@@ -48,6 +48,7 @@ function App() {
   }, [])
 
   const toggleNavBar = ({ stage, type }: ContentActivateParams) => {
+    console.log('onContentActivate', { stage, type })
     if (stage === 'activate' && type === 'advertisement') {
       setTabs(true)
     } else {
@@ -62,16 +63,20 @@ function App() {
 
   useEffect(() => {
     const withTheme = window.localStorage.getItem('with-theme')
-    window.localStorage.clear()
+    const withDebug = window.localStorage.getItem('SL_DEBUG')
+    // window.localStorage.clear()
     if (withTheme) {
       window.localStorage.setItem('with-theme', withTheme)
+    }
+    if (withDebug) {
+      window.localStorage.setItem('SL_DEBUG', withDebug)
     }
   }, [])
 
   return (
     <Container className={cx('app-container', theme)} onClick={() => setInteracted(true)}>
       <NavBar mode={mode} tabs={tabs} toggleMode={toggleMode} theme={theme} toggleTheme={toggleTheme} />
-      <StreamLayerProvider videoPlayerController={videoPlayerController} onContentActivate={toggleNavBar} plugins={plugins as any} withAdNotification sdkKey={SDK_KEY} theme="custom-theme" production={PRODUCTION} event={EVENT_ID}>
+      <StreamLayerProvider themeMode={theme === 'dark' ? 'dark' : 'light'} videoPlayerController={videoPlayerController} onContentActivate={toggleNavBar} plugins={plugins as any} withAdNotification sdkKey={SDK_KEY} theme="custom-theme" production={PRODUCTION} event={EVENT_ID}>
         <Auth />
         <AppContainer>
           <SDKLayout
@@ -80,7 +85,7 @@ function App() {
             points={<PointsContainer><StreamLayerSDKPoints /></PointsContainer>}
             sidebar={(
               <>
-                <StreamLayerSDKReact />
+                <StreamLayerSDKReact withSidebarNotification={false} />
                 <StreamLayerSDKAdvertisement sidebar='right' persistent skipTypeCheck />
                 {interacted && <StreamLayerSDKAdvertisement sidebar='right' persistent skipTypeCheck externalAd />}
               </>
@@ -89,12 +94,13 @@ function App() {
             video={<VideoComponent setInteracted={setInteracted} muted={muted} interacted={interacted} />}
             overlay={(
               <>
-                <StreamLayerSDKReact />
+                <StreamLayerSDKReact withSidebarNotification={false} />
                 <StreamLayerSDKAdvertisement persistent skipTypeCheck />
                 {interacted && <StreamLayerSDKAdvertisement persistent skipTypeCheck externalAd />}
               </>
             )}
-            notification={<StreamLayerSDKAdvertisement notification persistent />}
+            appNotification={<StreamLayerSDKNotification />}
+            adNotification={<StreamLayerSDKAdvertisement notification persistent />}
           />
         </AppContainer>
       </StreamLayerProvider>
